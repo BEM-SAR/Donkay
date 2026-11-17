@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en-GB" translate="no" class="notranslate">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Disable Google and browser translation prompts -->
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Content-Language" content="en-GB">
+    <title>CEFR A2 English Grammar Examination</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Prevent text selection to block built-in browser dictionary/lookup popups */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        /* Allow typing inside the candidate name input before exam starts */
+        input[type="text"] {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        /* Custom subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-transparent"
+      spellcheck="false"
+      oncontextmenu="return false;"
+      ondragstart="return false;"
+      onselectstart="return false;">
+
+    <!-- Top Navigation & Live Timer Bar -->
+    <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-lg bg-indigo-900 text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-sm">
+                    A2
+                </div>
+                <div>
+                    <h1 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">CEFR A2 Grammar Assessment</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Standard British English &bull; 20 Marks Total</p>
+                </div>
+            </div>
+
+            <!-- Active Exam Status & Countdown Timer (Hidden until exam starts) -->
+            <div id="examHeaderControls" class="hidden flex items-center space-x-3 sm:space-x-5">
+                <div class="hidden md:flex flex-col text-right">
+                    <span class="text-xs text-slate-500">Progress</span>
+                    <span id="progressText" class="text-sm font-semibold text-slate-800">0 / 20 Answered</span>
+                </div>
+
+                <div id="timerBadge" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-slate-100 border border-slate-300 transition-colors">
+                    <svg class="w-4 h-4 text-indigo-700" id="timerIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="timerDisplay" class="font-mono text-base sm:text-lg font-bold text-slate-900 tracking-tight">30:00</span>
+                </div>
+            </div>
+        </div>
+        <!-- Subtle Progress Bar -->
+        <div id="progressBarContainer" class="hidden w-full bg-slate-100 h-1">
+            <div id="progressBar" class="bg-indigo-700 h-1 transition-all duration-300" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <!-- Security Toast Notification -->
+    <div id="securityToast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg border border-slate-700 flex items-center space-x-3 text-sm">
+            <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <span id="securityToastMsg">Action disabled during examination.</span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
+
+        <!-- VIEW 1: START / CANDIDATE BRIEFING SCREEN -->
+        <section id="startScreen" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-indigo-950 px-6 py-8 sm:px-10 text-white">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-indigo-800/80 text-indigo-100 border border-indigo-700 mb-3">
+                    Official Examination Environment
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Elementary (A2) English Grammar Test</h2>
+                <p class="mt-2 text-indigo-200 text-sm sm:text-base max-w-2xl">
+                    Please read the examination regulations carefully before entering your details and commencing the assessment.
+                </p>
+            </div>
+
+            <div class="p-6 sm:p-10 space-y-8">
+                <!-- Key Exam Metrics -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Time Limit</p>
+                        <p class="mt-1 text-xl font-bold text-slate-900">30 Minutes</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Questions</p>
+                        <p class="mt-1 text-xl font-bold text-slate-900">20 Items</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Marking</p>
+                        <p class="mt-1 text-xl font-bold text-slate-900">1 Mark Each</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Score</p>
+                        <p class="mt-1 text-xl font-bold text-indigo-700">20 Marks</p>
+                    </div>
+                </div>
+
+                <!-- Examination Rules -->
+                <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-5">
+                    <h3 class="text-sm font-bold text-amber-950 flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                        <span>Examination Conditions &amp; Security Controls</span>
+                    </h3>
+                    <ul class="mt-3 space-y-2 text-sm text-amber-900 list-disc list-inside">
+                        <li><strong>Strict Timing:</strong> You have exactly <strong>30 minutes</strong>. When the timer reaches 00:00, the exam will shut down and submit automatically.</li>
+                        <li><strong>No Aids Permitted:</strong> Dictionaries, translation tools, spellcheckers, text selection, and context menus are disabled.</li>
+                        <li><strong>Standard British English:</strong> All questions follow British English grammar and spelling conventions.</li>
+                        <li><strong>Results:</strong> Your total marks out of 20 and a detailed answer breakdown will be displayed immediately upon submission.</li>
+                    </ul>
+                </div>
+
+                <!-- Candidate Input Form -->
+                <form id="startForm" class="space-y-5 pt-2 border-t border-slate-100">
+                    <div>
+                        <label for="candidateName" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                            Candidate Full Name <span class="text-red-600">*</span>
+                        </label>
+                        <input type="text"
+                               id="candidateName"
+                               required
+                               maxlength="60"
+                               placeholder="Enter your full name (e.g., Oliver Thompson)"
+                               spellcheck="false"
+                               autocorrect="off"
+                               autocapitalize="off"
+                               autocomplete="off"
+                               translate="no"
+                               class="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition">
+                        <p id="nameError" class="hidden mt-1.5 text-xs font-medium text-red-600">Please enter your full name to begin the examination.</p>
+                    </div>
+
+                    <div class="flex items-center justify-end pt-2">
+                        <button type="submit"
+                                class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 active:bg-indigo-900 text-white font-semibold text-sm sm:text-base shadow-sm transition flex items-center justify-center space-x-2 cursor-pointer">
+                            <span>Start Examination</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- VIEW 2: ACTIVE EXAMINATION SCREEN -->
+        <section id="examScreen" class="hidden space-y-6">
+            <!-- Candidate Banner -->
+            <div class="bg-white rounded-xl border border-slate-200 px-5 py-3.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+                <div class="text-sm text-slate-600">
+                    Candidate: <span id="displayCandidateName" class="font-bold text-slate-900"></span>
+                </div>
+                <div class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+                    1 Mark per Question &bull; Total: 20 Marks
+                </div>
+            </div>
+
+            <!-- Question Navigator Pills -->
+            <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-2.5">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Question Navigator</span>
+                    <span id="mobileProgressText" class="text-xs font-semibold text-indigo-700 md:hidden">0 / 20 Answered</span>
+                </div>
+                <div id="questionNavGrid" class="grid grid-cols-10 gap-1.5 sm:gap-2">
+                    <!-- Nav buttons injected via JS -->
+                </div>
+            </div>
+
+            <!-- Questions List Container -->
+            <div id="questionsContainer" class="space-y-5">
+                <!-- 20 Question Cards injected via JS -->
+            </div>
+
+            <!-- Bottom Submit Controls -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                    <h4 class="font-bold text-slate-900 text-base">Finished your examination?</h4>
+                    <p id="submitSummaryHint" class="text-sm text-slate-500">Review your selections before submitting. You cannot change answers after submission.</p>
+                </div>
+                <button type="button"
+                        id="openSubmitModalBtn"
+                        class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-sm sm:text-base shadow-sm transition cursor-pointer shrink-0">
+                    Submit Exam
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW 3: RESULTS & MARK SHEET SCREEN -->
+        <section id="resultsScreen" class="hidden space-y-6">
+            <!-- Auto-Shutdown Alert Banner (Shown only if time ran out) -->
+            <div id="timeoutBanner" class="hidden bg-red-600 text-white rounded-2xl p-5 shadow-sm flex items-start space-x-3.5">
+                <svg class="w-6 h-6 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <h3 class="font-bold text-base sm:text-lg">Time Expired – Exam Shut Down</h3>
+                    <p class="text-sm text-red-100 mt-0.5">The 30-minute examination period has ended. Your script was automatically locked and submitted for marking.</p>
+                </div>
+            </div>
+
+            <!-- Official Score Card -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="bg-slate-900 px-6 py-6 sm:px-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Official Statement of Results</p>
+                        <h2 id="resultCandidateName" class="text-xl sm:text-2xl font-bold mt-1">Candidate Name</h2>
+                        <p id="submissionTimestamp" class="text-xs text-slate-400 mt-1"></p>
+                    </div>
+                    <div id="gradeBadge" class="inline-flex items-center px-4 py-2 rounded-xl font-bold text-sm border self-start sm:self-center">
+                        PASS
+                    </div>
+                </div>
+
+                <div class="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-3 gap-5 border-b border-slate-100">
+                    <div class="p-5 rounded-xl bg-indigo-50/70 border border-indigo-100 text-center">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-indigo-700">Total Marks Awarded</p>
+                        <p class="mt-2 text-4xl font-extrabold text-indigo-950">
+                            <span id="finalScore">0</span> <span class="text-xl font-semibold text-indigo-600">/ 20</span>
+                        </p>
+                    </div>
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Percentage</p>
+                        <p id="finalPercentage" class="mt-2 text-4xl font-extrabold text-slate-900">0%</p>
+                    </div>
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Time Taken</p>
+                        <p id="timeTakenDisplay" class="mt-2 text-3xl sm:text-4xl font-extrabold text-slate-900 font-mono">00:00</p>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+                    <p class="text-xs sm:text-sm text-slate-600">Each correct answer is awarded <strong>1 mark</strong>. Unanswered or incorrect items receive 0 marks.</p>
+                    <button type="button"
+                            onclick="window.location.reload()"
+                            class="px-4 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs sm:text-sm font-semibold transition cursor-pointer">
+                        Retake Assessment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detailed Question-by-Question Review -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 px-1">Detailed Question Breakdown</h3>
+                <div id="reviewContainer" class="space-y-4">
+                    <!-- Review items injected via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom Confirmation Modal (Replaces window.confirm) -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 transform transition-all">
+            <div class="flex items-center space-x-3 text-slate-900">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold">Submit Examination?</h3>
+            </div>
+
+            <p id="modalMessage" class="mt-3 text-sm text-slate-600 leading-relaxed">
+                Are you sure you want to submit your examination now? Once submitted, your answers will be locked and your marks will be calculated.
+            </p>
+
+            <div id="unansweredWarning" class="hidden mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 font-medium">
+                You still have unanswered questions. Unanswered questions will receive 0 marks.
+            </div>
+
+            <div class="mt-6 flex items-center justify-end space-x-3">
+                <button type="button"
+                        id="cancelSubmitBtn"
+                        class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-semibold text-sm transition cursor-pointer">
+                    Return to Exam
+                </button>
+                <button type="button"
+                        id="confirmSubmitBtn"
+                        class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition cursor-pointer">
+                    Yes, Submit Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-5 mt-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+            <span>CEFR Level A2 English Grammar Assessment &bull; Standard British English</span>
+            <span>Spellcheck, Translation &amp; Dictionary Tools Disabled</span>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * 20 Standard British English CEFR A2 Grammar Questions
+         * Each question is worth 1 mark (Total = 20 marks).
+         */
+        const questionsData = [
+            {
+                id: 1,
+                topic: "Present Simple vs Present Continuous",
+                question: "Be quiet, please! The baby ________ at the moment.",
+                options: ["sleeps", "is sleeping", "slept", "sleep"],
+                correct: 1,
+                explanation: "Use the present continuous ('is sleeping') for an action happening right now ('at the moment')."
+            },
+            {
+                id: 2,
+                topic: "Past Simple (Irregular Verbs)",
+                question: "We ________ to Edinburgh by train last weekend.",
+                options: ["go", "gone", "went", "were going"],
+                correct: 2,
+                explanation: "'Went' is the past simple form of 'go', used with a finished past time expression ('last weekend')."
+            },
+            {
+                id: 3,
+                topic: "Comparative Adjectives",
+                question: "Travelling by coach is usually ________ than travelling by train in the UK.",
+                options: ["cheap", "cheaper", "cheapest", "more cheap"],
+                correct: 1,
+                explanation: "Short one-syllable adjectives like 'cheap' form the comparative with '-er' + 'than'."
+            },
+            {
+                id: 4,
+                topic: "Countable & Uncountable Nouns",
+                question: "How ________ milk do we need for the Yorkshire pudding batter?",
+                options: ["many", "much", "few", "a lot"],
+                correct: 1,
+                explanation: "'Milk' is an uncountable noun, so we use 'How much' to ask about quantity."
+            },
+            {
+                id: 5,
+                topic: "Modal Verbs (Obligation)",
+                question: "In Britain, you ________ drive on the left-hand side of the road.",
+                options: ["must", "mustn't", "don't have to", "could"],
+                correct: 0,
+                explanation: "'Must' expresses a strong rule or legal obligation."
+            },
+            {
+                id: 6,
+                topic: "Present Perfect (Experience)",
+                question: "________ you ever eaten traditional Cornish pasties?",
+                options: ["Did", "Do", "Have", "Are"],
+                correct: 2,
+                explanation: "Use 'Have you ever + past participle' to ask about life experiences up to now."
+            },
+            {
+                id: 7,
+                topic: "Prepositions of Time",
+                question: "Our English lecture starts ________ half past nine on Monday morning.",
+                options: ["in", "on", "at", "by"],
+                correct: 2,
+                explanation: "Use 'at' for exact clock times ('at half past nine')."
+            },
+            {
+                id: 8,
+                topic: "Future Plans ('going to')",
+                question: "Look at those dark grey clouds! It ________ rain very soon.",
+                options: ["is going to", "will be", "goes to", "rained"],
+                correct: 0,
+                explanation: "Use 'be going to' when there is present evidence that something is about to happen."
+            },
+            {
+                id: 9,
+                topic: "Past Continuous vs Past Simple",
+                question: "I ________ dinner when the telephone rang.",
+                options: ["cooked", "am cooking", "was cooking", "cook"],
+                correct: 2,
+                explanation: "Use the past continuous ('was cooking') for an ongoing background action interrupted by a past simple event ('rang')."
+            },
+            {
+                id: 10,
+                topic: "Superlative Adjectives",
+                question: "Ben Nevis is ________ mountain in the United Kingdom.",
+                options: ["higher", "the highest", "highest", "the most high"],
+                correct: 1,
+                explanation: "Superlative forms of short adjectives require 'the' + '-est' ('the highest')."
+            },
+            {
+                id: 11,
+                topic: "Quantifiers ('some' / 'any')",
+                question: "There aren't ________ biscuits left in the tin.",
+                options: ["some", "any", "much", "a"],
+                correct: 1,
+                explanation: "Use 'any' in negative sentences with plural countable nouns ('biscuits')."
+            },
+            {
+                id: 12,
+                topic: "Modal Verbs (Advice)",
+                question: "You look exhausted. You ________ go to bed early tonight.",
+                options: ["should", "have", "mustn't", "need"],
+                correct: 0,
+                explanation: "'Should' + infinitive without 'to' is used to give friendly advice."
+            },
+            {
+                id: 13,
+                topic: "First Conditional",
+                question: "If it ________ tomorrow, we will visit the British Museum instead.",
+                options: ["will rain", "rains", "rained", "is rain"],
+                correct: 1,
+                explanation: "In first conditional sentences, use the present simple ('rains') in the 'if' clause."
+            },
+            {
+                id: 14,
+                topic: "Adverbs of Manner",
+                question: "She speaks French very ________ because she lived in Paris for a year.",
+                options: ["good", "well", "better", "best"],
+                correct: 1,
+                explanation: "'Well' is the irregular adverb corresponding to the adjective 'good'."
+            },
+            {
+                id: 15,
+                topic: "Verb Patterns ('enjoy' + -ing)",
+                question: "My grandparents really enjoy ________ in the countryside at weekends.",
+                options: ["walk", "to walk", "walking", "walked"],
+                correct: 2,
+                explanation: "The verb 'enjoy' is always followed by the '-ing' form (gerund)."
+            },
+            {
+                id: 16,
+                topic: "Present Perfect ('for' vs 'since')",
+                question: "Mr Davies has taught at this secondary school ________ 2018.",
+                options: ["for", "since", "from", "ago"],
+                correct: 1,
+                explanation: "Use 'since' with a specific point in time when an action started (the year 2018)."
+            },
+            {
+                id: 17,
+                topic: "Possessive Pronouns",
+                question: "Excuse me, is this umbrella ________? I found it under your desk.",
+                options: ["your", "you", "yours", "yourself"],
+                correct: 2,
+                explanation: "'Yours' is a possessive pronoun used without a following noun."
+            },
+            {
+                id: 18,
+                topic: "Past Simple Negatives",
+                question: "They ________ watch the football match because the television was broken.",
+                options: ["didn't", "wasn't", "don't", "haven't"],
+                correct: 0,
+                explanation: "Form past simple negatives with 'didn't' + base verb ('watch')."
+            },
+            {
+                id: 19,
+                topic: "Prepositions of Place",
+                question: "The chemist's is right ________ the post office and the bakery.",
+                options: ["among", "between", "next", "under"],
+                correct: 1,
+                explanation: "Use 'between' when something is in the middle of two distinct places."
+            },
+            {
+                id: 20,
+                topic: "Modal Verbs (Lack of Obligation)",
+                question: "Tomorrow is a bank holiday, so we ________ go to work.",
+                options: ["mustn't", "don't have to", "can't", "shouldn't"],
+                correct: 1,
+                explanation: "'Don't have to' means there is no obligation or necessity to do something."
+            }
+        ];
+
+        // State Variables
+        const EXAM_DURATION_SECONDS = 30 * 60; // 30 minutes (1800 seconds)
+        let remainingSeconds = EXAM_DURATION_SECONDS;
+        let timerInterval = null;
+        let examActive = false;
+        let examSubmitted = false;
+        let candidateName = "";
+        let userAnswers = new Array(questionsData.length).fill(null);
+
+        // DOM Elements
+        const startScreen = document.getElementById("startScreen");
+        const examScreen = document.getElementById("examScreen");
+        const resultsScreen = document.getElementById("resultsScreen");
+        const startForm = document.getElementById("startForm");
+        const candidateNameInput = document.getElementById("candidateName");
+        const nameError = document.getElementById("nameError");
+
+        const examHeaderControls = document.getElementById("examHeaderControls");
+        const progressBarContainer = document.getElementById("progressBarContainer");
+        const progressBar = document.getElementById("progressBar");
+        const progressText = document.getElementById("progressText");
+        const mobileProgressText = document.getElementById("mobileProgressText");
+
+        const timerBadge = document.getElementById("timerBadge");
+        const timerIcon = document.getElementById("timerIcon");
+        const timerDisplay = document.getElementById("timerDisplay");
+
+        const questionNavGrid = document.getElementById("questionNavGrid");
+        const questionsContainer = document.getElementById("questionsContainer");
+
+        const openSubmitModalBtn = document.getElementById("openSubmitModalBtn");
+        const confirmModal = document.getElementById("confirmModal");
+        const cancelSubmitBtn = document.getElementById("cancelSubmitBtn");
+        const confirmSubmitBtn = document.getElementById("confirmSubmitBtn");
+        const unansweredWarning = document.getElementById("unansweredWarning");
+
+        const securityToast = document.getElementById("securityToast");
+        const securityToastMsg = document.getElementById("securityToastMsg");
+        let toastTimeout = null;
+
+        /**
+         * Display subtle security warning toast when blocked actions are attempted
+         */
+        function showSecurityNotice(message) {
+            securityToastMsg.textContent = message;
+            securityToast.classList.remove("translate-y-20", "opacity-0");
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                securityToast.classList.add("translate-y-20", "opacity-0");
+            }, 2600);
+        }
+
+        /**
+         * Exam Security Hardening:
+         * Block right-click, copy, cut, paste, text selection, find, inspect, and lookup shortcuts.
+         */
+        document.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            if (examActive) showSecurityNotice("Context menu and dictionary lookup are disabled.");
+        });
+
+        ["copy", "cut", "paste"].forEach((evt) => {
+            document.addEventListener(evt, (e) => {
+                e.preventDefault();
+                if (examActive) showSecurityNotice("Copying and pasting are prohibited during the exam.");
+            });
+        });
+
+        document.addEventListener("keydown", (e) => {
+            const key = e.key.toLowerCase();
+            // Block Ctrl/Cmd + C, X, V, A, F, U, S, P, G, H, J, K
+            if ((e.ctrlKey || e.metaKey) && ["c", "x", "v", "a", "f", "u", "s", "p", "g", "k"].includes(key)) {
+                e.preventDefault();
+                if (examActive) showSecurityNotice("Keyboard shortcuts and search/dictionary tools are disabled.");
+            }
+            // Block F12, F3, F7 (caret browsing), Ctrl+Shift+I/J/C
+            if (e.key === "F12" || e.key === "F3" || e.key === "F7" ||
+                ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(key))) {
+                e.preventDefault();
+                if (examActive) showSecurityNotice("Developer and lookup tools are restricted.");
+            }
+        });
+
+        /**
+         * Format seconds into MM:SS
+         */
+        function formatTime(totalSecs) {
+            const mins = Math.floor(totalSecs / 60);
+            const secs = totalSecs % 60;
+            return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+        }
+
+        /**
+         * Start Exam Form Submission
+         */
+        startForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const rawName = candidateNameInput.value.trim();
+            if (!rawName) {
+                nameError.classList.remove("hidden");
+                candidateNameInput.focus();
+                return;
+            }
+            nameError.classList.add("hidden");
+            candidateName = rawName;
+            beginExamination();
+        });
+
+        /**
+         * Initialise Exam UI & Start 30-Minute Countdown
+         */
+        function beginExamination() {
+            examActive = true;
+            examSubmitted = false;
+            remainingSeconds = EXAM_DURATION_SECONDS;
+
+            document.getElementById("displayCandidateName").textContent = candidateName;
+            startScreen.classList.add("hidden");
+            examScreen.classList.remove("hidden");
+            examHeaderControls.classList.remove("hidden");
+            progressBarContainer.classList.remove("hidden");
+
+            renderQuestions();
+            updateProgressUI();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+
+            // Start 1-second interval timer
+            timerDisplay.textContent = formatTime(remainingSeconds);
+            timerInterval = setInterval(() => {
+                remainingSeconds--;
+
+                if (remainingSeconds <= 0) {
+                    remainingSeconds = 0;
+                    timerDisplay.textContent = "00:00";
+                    clearInterval(timerInterval);
+                    shutdownAndSubmitExam(true); // Auto-shutdown at 30:00
+                    return;
+                }
+
+                timerDisplay.textContent = formatTime(remainingSeconds);
+
+                // Visual warning in the final 5 minutes (300 seconds)
+                if (remainingSeconds <= 300 && remainingSeconds > 60) {
+                    timerBadge.className = "flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-amber-50 border border-amber-300 transition-colors";
+                    timerIcon.className = "w-4 h-4 text-amber-600";
+                    timerDisplay.className = "font-mono text-base sm:text-lg font-bold text-amber-800 tracking-tight";
+                }
+                // Urgent warning in the final 60 seconds
+                if (remainingSeconds <= 60) {
+                    timerBadge.className = "flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-red-50 border border-red-300 animate-pulse transition-colors";
+                    timerIcon.className = "w-4 h-4 text-red-600";
+                    timerDisplay.className = "font-mono text-base sm:text-lg font-bold text-red-700 tracking-tight";
+                }
+            }, 1000);
+        }
+
+        /**
+         * Render Question Navigator Pills & All 20 Question Cards
+         */
+        function renderQuestions() {
+            questionNavGrid.innerHTML = "";
+            questionsContainer.innerHTML = "";
+            const optionLetters = ["A", "B", "C", "D"];
+
+            questionsData.forEach((q, qIndex) => {
+                // 1. Navigator Button
+                const navBtn = document.createElement("button");
+                navBtn.type = "button";
+                navBtn.id = `nav-pill-${qIndex}`;
+                navBtn.textContent = q.id;
+                navBtn.className = "h-8 rounded-lg text-xs font-semibold border border-slate-200 bg-slate-50 text-slate-600 hover:border-indigo-400 transition cursor-pointer flex items-center justify-center";
+                navBtn.addEventListener("click", () => {
+                    const card = document.getElementById(`question-card-${qIndex}`);
+                    if (card) {
+                        const yOffset = -84;
+                        const y = card.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                        window.scrollTo({ top: y, behavior: "smooth" });
+                    }
+                });
+                questionNavGrid.appendChild(navBtn);
+
+                // 2. Question Card
+                const card = document.createElement("article");
+                card.id = `question-card-${qIndex}`;
+                card.setAttribute("translate", "no");
+                card.setAttribute("spellcheck", "false");
+                card.className = "bg-white rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-sm transition-all";
+
+                const optionsHtml = q.options.map((opt, optIdx) => `
+                    <label for="q${qIndex}_opt${optIdx}"
+                           id="label_q${qIndex}_opt${optIdx}"
+                           class="group flex items-center p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/30 cursor-pointer transition-all">
+                        <input type="radio"
+                               id="q${qIndex}_opt${optIdx}"
+                               name="question_${qIndex}"
+                               value="${optIdx}"
+                               class="sr-only"
+                               onchange="handleOptionSelect(${qIndex}, ${optIdx})">
+                        <span id="badge_q${qIndex}_opt${optIdx}"
+                              class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 group-hover:bg-indigo-100 group-hover:text-indigo-800 font-bold text-xs flex items-center justify-center mr-3.5 shrink-0 transition-colors">
+                            ${optionLetters[optIdx]}
+                        </span>
+                        <span class="text-sm sm:text-base text-slate-800 font-medium">${opt}</span>
+                    </label>
+                `).join("");
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-100">
+                            Question ${q.id} of ${questionsData.length}
+                        </span>
+                        <span class="text-xs font-medium text-slate-400">1 Mark</span>
+                    </div>
+                    <p class="text-base sm:text-lg font-semibold text-slate-900 leading-relaxed mb-5">
+                        ${q.question}
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${optionsHtml}
+                    </div>
+                `;
+
+                questionsContainer.appendChild(card);
+            });
+        }
+
+        /**
+         * Handle Candidate Selecting an Answer Option
+         */
+        window.handleOptionSelect = function(qIndex, optIdx) {
+            if (!examActive || examSubmitted) return;
+
+            userAnswers[qIndex] = optIdx;
+
+            // Update styling of all 4 options in this question card
+            for (let i = 0; i < 4; i++) {
+                const label = document.getElementById(`label_q${qIndex}_opt${i}`);
+                const badge = document.getElementById(`badge_q${qIndex}_opt${i}`);
+                if (i === optIdx) {
+                    label.className = "flex items-center p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/70 cursor-pointer transition-all shadow-2xs";
+                    badge.className = "w-7 h-7 rounded-lg bg-indigo-700 text-white font-bold text-xs flex items-center justify-center mr-3.5 shrink-0 transition-colors";
+                } else {
+                    label.className = "group flex items-center p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/30 cursor-pointer transition-all";
+                    badge.className = "w-7 h-7 rounded-lg bg-slate-100 text-slate-700 group-hover:bg-indigo-100 group-hover:text-indigo-800 font-bold text-xs flex items-center justify-center mr-3.5 shrink-0 transition-colors";
+                }
+            }
+
+            // Highlight Navigator Pill as answered
+            const navPill = document.getElementById(`nav-pill-${qIndex}`);
+            if (navPill) {
+                navPill.className = "h-8 rounded-lg text-xs font-bold border border-indigo-700 bg-indigo-700 text-white transition cursor-pointer flex items-center justify-center";
+            }
+
+            updateProgressUI();
+        };
+
+        /**
+         * Update Answered Counter & Top Progress Bar
+         */
+        function updateProgressUI() {
+            const answeredCount = userAnswers.filter((ans) => ans !== null).length;
+            const total = questionsData.length;
+            const pct = (answeredCount / total) * 100;
+
+            progressText.textContent = `${answeredCount} / ${total} Answered`;
+            mobileProgressText.textContent = `${answeredCount} / ${total} Answered`;
+            progressBar.style.width = `${pct}%`;
+        }
+
+        /**
+         * Manual Submission Modal Controls
+         */
+        openSubmitModalBtn.addEventListener("click", () => {
+            if (!examActive || examSubmitted) return;
+            const unansweredCount = userAnswers.filter((ans) => ans === null).length;
+            if (unansweredCount > 0) {
+                unansweredWarning.textContent = `Notice: You have ${unansweredCount} unanswered question${unansweredCount > 1 ? "s" : ""}. Unanswered items will receive 0 marks.`;
+                unansweredWarning.classList.remove("hidden");
+            } else {
+                unansweredWarning.classList.add("hidden");
+            }
+            confirmModal.classList.remove("hidden");
+        });
+
+        cancelSubmitBtn.addEventListener("click", () => {
+            confirmModal.classList.add("hidden");
+        });
+
+        confirmSubmitBtn.addEventListener("click", () => {
+            confirmModal.classList.add("hidden");
+            shutdownAndSubmitExam(false);
+        });
+
+        /**
+         * Lock Exam, Calculate Marks (1 mark per question, 20 total), and Render Results
+         */
+        function shutdownAndSubmitExam(isAutoTimeout) {
+            if (examSubmitted) return;
+            examSubmitted = true;
+            examActive = false;
+            clearInterval(timerInterval);
+
+            // Close modal if open during auto-shutdown
+            confirmModal.classList.add("hidden");
+
+            // Calculate time taken
+            const secondsElapsed = EXAM_DURATION_SECONDS - remainingSeconds;
+            const timeTakenFormatted = formatTime(secondsElapsed);
+
+            // Calculate total marks (1 mark per correct answer)
+            let totalMarks = 0;
+            questionsData.forEach((q, idx) => {
+                if (userAnswers[idx] === q.correct) {
+                    totalMarks += 1;
+                }
+            });
+
+            const percentage = Math.round((totalMarks / questionsData.length) * 100);
+
+            // Switch views
+            examScreen.classList.add("hidden");
+            examHeaderControls.classList.add("hidden");
+            progressBarContainer.classList.add("hidden");
+            resultsScreen.classList.remove("hidden");
+
+            // Show timeout shutdown banner if triggered by the 30-minute timer
+            const timeoutBanner = document.getElementById("timeoutBanner");
+            if (isAutoTimeout) {
+                timeoutBanner.classList.remove("hidden");
+            } else {
+                timeoutBanner.classList.add("hidden");
+            }
+
+            // Populate Result Summary
+            document.getElementById("resultCandidateName").textContent = candidateName;
+            const now = new Date();
+            document.getElementById("submissionTimestamp").textContent =
+                `Completed on ${now.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} at ${now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
+
+            document.getElementById("finalScore").textContent = totalMarks;
+            document.getElementById("finalPercentage").textContent = `${percentage}%`;
+            document.getElementById("timeTakenDisplay").textContent = timeTakenFormatted;
+
+            // CEFR A2 Pass/Distinction Badge (Pass mark >= 12/20 [60%])
+            const gradeBadge = document.getElementById("gradeBadge");
+            if (totalMarks >= 17) {
+                gradeBadge.textContent = "PASS WITH DISTINCTION";
+                gradeBadge.className = "inline-flex items-center px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 self-start sm:self-center";
+            } else if (totalMarks >= 12) {
+                gradeBadge.textContent = "PASS (A2 ACHIEVED)";
+                gradeBadge.className = "inline-flex items-center px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-500/20 text-indigo-200 border border-indigo-400/40 self-start sm:self-center";
+            } else {
+                gradeBadge.textContent = "BELOW PASS MARK (12/20)";
+                gradeBadge.className = "inline-flex items-center px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-red-500/20 text-red-300 border border-red-500/40 self-start sm:self-center";
+            }
+
+            renderReviewBreakdown();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        /**
+         * Render Question-by-Question Answer Breakdown
+         */
+        function renderReviewBreakdown() {
+            const reviewContainer = document.getElementById("reviewContainer");
+            reviewContainer.innerHTML = "";
+            const optionLetters = ["A", "B", "C", "D"];
+
+            questionsData.forEach((q, idx) => {
+                const selected = userAnswers[idx];
+                const isCorrect = selected === q.correct;
+                const isUnanswered = selected === null;
+
+                const statusBadge = isCorrect
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-100 text-emerald-800">1 / 1 Mark &bull; Correct</span>`
+                    : `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-red-100 text-red-800">0 / 1 Mark &bull; ${isUnanswered ? "Unanswered" : "Incorrect"}</span>`;
+
+                const userAnswerText = isUnanswered
+                    ? `<span class="italic text-slate-400">No answer selected</span>`
+                    : `<span class="font-semibold ${isCorrect ? "text-emerald-700" : "text-red-700"}">${optionLetters[selected]}. ${q.options[selected]}</span>`;
+
+                const correctAnswerText = `<span class="font-semibold text-emerald-800">${optionLetters[q.correct]}. ${q.options[q.correct]}</span>`;
+
+                const reviewCard = document.createElement("div");
+                reviewCard.className = `bg-white rounded-2xl border ${isCorrect ? "border-slate-200" : "border-red-200"} p-5 shadow-sm`;
+
+                reviewCard.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Question ${q.id} &bull; ${q.topic}</span>
+                        ${statusBadge}
+                    </div>
+                    <p class="text-sm sm:text-base font-semibold text-slate-900 mb-3">${q.question}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                        <div>
+                            <span class="text-slate-500 block text-xs mb-0.5">Your Answer:</span>
+                            ${userAnswerText}
+                        </div>
+                        <div>
+                            <span class="text-slate-500 block text-xs mb-0.5">Correct Answer:</span>
+                            ${correctAnswerText}
+                        </div>
+                    </div>
+                    <p class="mt-3 text-xs text-slate-600 leading-relaxed">
+                        <strong class="text-slate-800">Grammar Note:</strong> ${q.explanation}
+                    </p>
+                `;
+
+                reviewContainer.appendChild(reviewCard);
+            });
+        }
+    </script>
+</body>
+</html>
